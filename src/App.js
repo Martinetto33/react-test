@@ -8,32 +8,29 @@ function Square({ value, onSquareClick }) {
   );
 }
 
-// default function is equivalent to a sort of "main"
-export default function Board() {
-  const [isXNext, setXIsNext] = useState(true);
-  const [squares, setSquares] = useState(Array(9).fill(null));
+
+function Board({ xIsNext, squares, onPlay }) {
   const winner = isMatchOver(squares)
   let status
   if (winner) {
-    status = "Winner: " + (isXNext ? "O" : "X")
+    status = "Winner: " + (xIsNext ? "O" : "X")
   } else {
-    status = "Next player: " + (isXNext ? "X" : "O")
+    status = "Next player: " + (xIsNext ? "X" : "O")
   }
 
   function handleClick(i) {
     const newSquares = squares.slice();
     if (squares[i] != null || isMatchOver(newSquares)) return // if the square is already filled or a player won, return (do nothing)
-    if (isXNext) { 
+    if (xIsNext) { 
       newSquares[i] = "X";
     } else {
       newSquares[i] = "O";
     }
-    setSquares(newSquares);
-    setXIsNext(!isXNext);
+    onPlay(newSquares)
   }
-
+  
   return (
-  <>
+    <>
     <div className="status">{status}</div>
     <div className="board-row">
       <Square value={squares[0]} onSquareClick={() => handleClick(0)} /> {/* this is basically a constructor */}
@@ -51,6 +48,29 @@ export default function Board() {
       <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
     </div>
   </>
+  );
+}
+
+// default function is equivalent to a sort of "main"; it tells
+// the index.js file what is the top-level component
+export default function Game() {
+  const [xIsNext, setXIsNext] = useState(true)
+  const [history, setHistory] = useState([Array(9).fill(null)])
+  const currentSquares = history[history.length - 1]
+  function handlePlay(nextSquares) {
+    setHistory([...history, nextSquares]) /* ...history means 'enumerate all elements in history' 
+    [this is called spread syntax], then append nextSquares */
+    setXIsNext(!xIsNext)
+  }
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <ol>{/* TODO */}</ol>
+      </div>
+    </div>
   );
 }
 
